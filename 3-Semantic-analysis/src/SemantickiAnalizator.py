@@ -28,62 +28,31 @@ class Analyzer:
         self.tokens = []
         self.stack = deque()
         self.ast_str = ast_str
+        self.length = len(self.ast_str)
         self.cursor_index = 0
         self.cursor = ast_str[self.cursor_index]
 
     def analyse(self):
         while self.cursor is not None:
             if self.cursor == "<naredba_pridruzivanja>":
-                self.operation_compound()
+                self.compund_operation()
             elif self.cursor == "<za_petlja>":
-                self.operation_loop()
+                self.loop_operation()
             elif "IDN" in self.cursor:
-                self.add_semantic_token()
+                self.add_token()
             elif "az" in self.cursor:
                 self.remove_from_stack()
-            else:
-                self.advance()
+            self.advance()
 
     def advance(self):
-        if self.cursor_index + 1 < len(self.ast_str):
+        if self.cursor_index + 1 < self.length:
             self.cursor_index += 1
             self.cursor = self.ast_str[self.cursor_index]
         else:
             self.cursor_index = -1
             self.cursor = None
 
-    def add_semantic_token(self):
-        idn, ln_usage, idn_value = self.cursor.split()
-        ln_def = self.find_def_on_stack(idn_value)
-
-        if ln_def is not None and ln_def != ln_usage:
-            self.tokens.append(Token(ln_usage, ln_def, idn_value))
-        else:
-            raise SemanticError(Token(ln_usage, ln_usage, idn_value))
-        self.advance()
-
-    def push_to_stack(self):
-        const, ln_num, value = self.cursor.split()
-        self.stack.append(Token(ln_num, ln_num, value))
-
-    def pop_from_stack(self):
-        return self.stack.pop()
-
-    def remove_from_stack(self):
-        while len(self.stack) > 0 and self.stack[-1].value != "za":
-            self.pop_from_stack()
-
-        self.pop_from_stack()
-        self.advance()
-
-    def find_def_on_stack(self, idn_value):
-        for item in reversed(self.stack):
-            if item.value == idn_value:
-                return item.ln_def
-
-        return None
-
-    def operation_compound(self):
+    def compund_operation(self):
         self.advance()
         const, line_num, value = self.cursor.split()
         token = Token(line_num, line_num, value)
@@ -100,17 +69,47 @@ class Analyzer:
             self.push_to_stack()
         self.advance()
 
-    def operation_loop(self):
+    def loop_operation(self):
         self.advance()
         self.push_to_stack()
         self.advance()
         self.push_to_stack()
         self.advance()
+
+    def add_token(self):
+        idn, ln_usage, idn_value = self.cursor.split()
+        ln_def = self.find_def_on_stack(idn_value)
+
+        if ln_def is not None and ln_def != ln_usage:
+            self.tokens.append(Token(ln_usage, ln_def, idn_value))
+        else:
+            raise SemanticError(Token(ln_usage, ln_usage, idn_value))
+        self.advance()
+
+    def remove_from_stack(self):
+        while self.stack and self.stack[-1].value != "za":
+            self.pop_from_stack()
+
+        self.pop_from_stack()
+        self.advance()
+
+    def push_to_stack(self):
+        const, ln_num, value = self.cursor.split()
+        self.stack.append(Token(ln_num, ln_num, value))
+
+    def pop_from_stack(self):
+        return self.stack.pop()
+
+    def find_def_on_stack(self, idn_value):
+        for item in reversed(self.stack):
+            if item.value == idn_value:
+                return item.ln_def
+
+        return None
 
 
 def main():
     data = [x.strip() for x in stdin.readlines()]
-
     a = Analyzer(data)
 
     try:
