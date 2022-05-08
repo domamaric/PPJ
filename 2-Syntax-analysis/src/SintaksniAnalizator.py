@@ -1,9 +1,14 @@
-from sys import stdin
 from collections import deque
+from sys import stdin
 
 
 class SA:
+    """  A Syntax analyzer transforms a token stream (from the Lexical analyzer)
+     into a Syntax tree, based on a grammar. """
+
     def __init__(self):
+        """ Initialize analyzer grammar, syntax tree, etc."""
+
         self.gramatika = {
             '<program>': [(['<lista_naredbi>'], ['IDN', 'KR_ZA', 'endIn'])],
             '<lista_naredbi>': [
@@ -55,6 +60,7 @@ class SA:
         self.od = []
 
     def zamijeni(self, lijevo, desno, primjeni):
+        """ """
         x = self.stog.pop()
         self.linija = self.stogLinija.pop()
         self.genStablo.append(x)
@@ -98,9 +104,11 @@ class SA:
         self.genStabloRazmak.append(self.linija + 1)
 
     def zadrzi(self, lijevo, desno, primjeni):
+        """ For now do nothing. """
         pass
 
     def prihvati(self, lijevo, desno, primjeni):
+        """ Accepts final state of automata. """
         self.kraj = 1
 
     def obradi_epsilon(self, lijevo, desno, primjeni):
@@ -116,6 +124,13 @@ class SA:
                 (self.zadrzi, lijevo, desno, primjeni))
 
     def obradi_zavrsni(self, lijevo, desno, primjeni):
+        """ Process final symbol.
+
+        :param str lijevo: Left element of grammar.
+        :param str desno: Rightmost element of grammar.
+        :param function primjeni: Function to apply to elements.
+        :returns None:
+        """
         if len(desno) <= 1:
             self.tablica[(lijevo, desno[0])] = (
                 (self.izvuci, lijevo, desno[1:], primjeni),
@@ -176,7 +191,8 @@ def main():
             else:
                 s.obradi_zavrsni(lijevo, desno, primjeni)
 
-    znakovistoga = ["KR_OD", "KR_DO", "KR_AZ", "D_ZAGRADA", "OP_PRIDRUZI", "IDN"]
+    znakovistoga = ["KR_OD", "KR_DO", "KR_AZ", "D_ZAGRADA", "OP_PRIDRUZI",
+                    "IDN"]
     for znak in znakovistoga:
         s.tablica[(znak, znak)] = (
             (s.izvuci, lijevo, desno, primjeni),
