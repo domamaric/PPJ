@@ -60,7 +60,6 @@ class SA:
         self.od = []
 
     def zamijeni(self, lijevo, desno, primjeni):
-        """ """
         x = self.stog.pop()
         self.linija = self.stogLinija.pop()
         self.genStablo.append(x)
@@ -96,6 +95,7 @@ class SA:
             self.genStabloRazmak.append(self.linija)
 
     def izvuci_e(self, lijevo, desno, primjeni):
+        """ Removes epsilon transition from stack. """
         x = self.stog.pop()
         self.linija = self.stogLinija.pop()
         self.genStablo.append(x)
@@ -142,10 +142,15 @@ class SA:
 
 
 class Parser(SA):
+    """ A 'PJ' langugae parser implementation. """
     def __init__(self):
         super().__init__()
 
     def parsiraj(self):
+        """ Prints abstract syntax tree to stdin.
+
+        :returns None:
+        """
         while self.kraj == 0:
             if self.stog:
                 stanje = self.stog[-1]
